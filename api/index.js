@@ -11,6 +11,10 @@ const fs = require('fs');
 let database = null;
 const collectionName = "measurements";
 
+/* Activa mensajes de debug por consula */ 
+const debug = true;
+/*****************************************/
+
 async function startDatabase() {
 //    const mongod = await MongoMemoryServer.create();
     const uri = "mongodb://localhost:27017/?maxPoolSize=20&w=majority";	
@@ -96,6 +100,7 @@ function render(template, vars) {
 }
 
 app.get('/web/device/:id', function (req,res) {
+    console.log("Execution Method => get web/device/:id");
     var template = "<html>"+
                      "<head><title>Sensor {{name}}</title></head>" +
                      "<body>" +
@@ -113,6 +118,7 @@ app.get('/web/device/:id', function (req,res) {
 
 
 app.get('/term/device/:id', function (req, res) {
+    console.log("Execution Method => get term/device/:id");
     var red = "\33[31m";
     var green = "\33[32m";
     var blue = "\33[33m";
@@ -126,15 +132,25 @@ app.get('/term/device/:id', function (req, res) {
 });
 
 app.get('/measurement', async (req,res) => {
+    if(debug){console.log("Execution Method => get measurement");}
     res.send(await getMeasurements());
 });
 
+app.get('/device/:id',function(req,res) {
+    if(debug){console.log("Execution Method => get device/id");}
+
+    var device = db.public.many("SELECT * FROM devices WHERE device_id = '"+req.params.id+"'");
+    res.send('{"device_id":"'+device[0].device_id+'","name":"'+device[0].name+'","key":"'+device[0].key+'"}');
+});
+
 app.get('/device', function(req,res) {
+    console.log("Execution Method => get device");
     res.send( db.public.many("SELECT * FROM devices") );
 });
 
 app.get('/admin/:command', function(req,res) {
-    var msg="done";
+    console.log("Execution Method => get admin/:command");
+    var msg="done";    
     switch (req.params.command) {
        case "clear":
          if (req.query.db == "mongo") {
